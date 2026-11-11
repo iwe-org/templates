@@ -23,10 +23,10 @@
 
 [dev-workspace]
 repository = "https://github.com/iwe-org/dev-workspace"
-rev = "5866d0829ea076b1e58930c1ee8bc5d42c349485"
-version = "1.0.0"
+rev = "c93b7ec83c062589f8eeec85fb01e4649da504c4"
+version = "1.1.0"
 
 [marketing-workspace]
 repository = "https://github.com/iwe-org/marketing-workspace"
-rev = "9f15073d35a2a044cd39bbdf3e514b268cc6a543"
-version = "1.0.0"
+rev = "dc9a2c4c89269535c8d04f653d6d7b8d6111a5b6"
+version = "1.1.0"
