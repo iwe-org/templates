@@ -30,3 +30,8 @@ version = "1.1.0"
 repository = "https://github.com/iwe-org/marketing-workspace"
 rev = "dc9a2c4c89269535c8d04f653d6d7b8d6111a5b6"
 version = "1.1.0"
+
+[seventeen-centuries]
+repository = "https://github.com/iwe-org/seventeen-centuries-workspace"
+rev = "f215cac2e6640f871b2283761f34ae408173524f"
+version = "1.0.0"
