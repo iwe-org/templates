@@ -1,6 +1,6 @@
 pub const FORMAT: u32 = 1;
 
-pub const MAX_FILES: usize = 500;
+pub const MAX_FILES: usize = 1500;
 pub const MAX_FILE_BYTES: u64 = 1024 * 1024;
 pub const MAX_TOTAL_BYTES: u64 = 5 * 1024 * 1024;
 pub const MAX_PREVIEW_BYTES: u64 = 500 * 1024;

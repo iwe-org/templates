@@ -64,7 +64,7 @@ writes a file, so a template that breaks one is neither published nor installed.
   fails.
 - **Links and paths.** No symlink, no hard link, no path that leaves the
   template, and no two paths that differ only in letter case.
-- **Size.** At most 500 files, 1 MB per file and 5 MB in total. `preview.png` is
+- **Size.** At most 1,500 files, 1 MB per file and 5 MB in total. `preview.png` is
   at most 500 KB.
 - **Scripts.** No minified or bundled JavaScript. A line over 500 characters
   fails in a `.js` file, in a `<script>` element of an `.html` or `.svg` file,
