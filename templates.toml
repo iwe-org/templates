@@ -1,0 +1,22 @@
+# The registry of iWe workspace templates.
+#
+# One table per template. The table name is the template's id and must equal
+# the `id` in the template's `template.toml`.
+#
+#   [dev-workspace]
+#   repository = "https://github.com/iwe-org/dev-workspace"
+#   rev = "4f1c9a0e6b7d2c3a8e5f0b1d9c7a6e4f3b2d1c0a"
+#   version = "1.0.0"
+#   path = ""
+#   featured = false
+#
+# repository  The template's GitHub repository, https://github.com/<owner>/<name>.
+# rev         The full 40-character commit SHA that was reviewed. A branch or a
+#             tag name fails the check.
+# version     The `version` in `template.toml` at that commit. It must increase
+#             every time `rev` moves.
+# path        The template's folder inside the repository; empty for the root.
+# featured    Set by maintainers only. Leave it out or false.
+#
+# To submit a template, add a table. To update one, change `rev` and `version`.
+# See CONTRIBUTING.md.

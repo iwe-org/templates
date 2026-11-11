@@ -1,0 +1,97 @@
+name: bump
+
+on:
+  workflow_call:
+    inputs:
+      id:
+        description: The template id, the table name in templates.toml
+        required: true
+        type: string
+      version:
+        description: The new version; the tag name without a leading v when empty
+        required: false
+        type: string
+        default: ""
+      fork:
+        description: The owner/name of the registry fork the branch is pushed to; <caller owner>/templates when empty
+        required: false
+        type: string
+        default: ""
+      registry:
+        description: The owner/name of the registry repository
+        required: false
+        type: string
+        default: iwe-org/templates
+    secrets:
+      registry-token:
+        description: A token that can push to the fork and open a pull request against the registry
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  bump:
+    name: Open the registry update pull request
+    runs-on: ubuntu-latest
+    env:
+      TEMPLATE_ID: ${{ inputs.id }}
+      TEMPLATE_VERSION: ${{ inputs.version }}
+      REGISTRY_FORK: ${{ inputs.fork }}
+      REGISTRY: ${{ inputs.registry }}
+      GH_TOKEN: ${{ secrets.registry-token }}
+    steps:
+      - name: Update the entry and open the pull request
+        run: |
+          set -euo pipefail
+
+          version="${TEMPLATE_VERSION:-${GITHUB_REF_NAME#v}}"
+          fork="${REGISTRY_FORK:-$GITHUB_REPOSITORY_OWNER/templates}"
+          branch="bump-$TEMPLATE_ID-$version"
+          repository_pattern='^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$'
+
+          if [[ ! "$TEMPLATE_ID" =~ ^[a-z][a-z0-9-]{2,39}$ ]]; then
+            echo "::error::id must be lowercase kebab-case, 3 to 40 characters"
+            exit 1
+          fi
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::$version is not a semver version; tag the release as v1.2.3 or pass version"
+            exit 1
+          fi
+          if [[ ! "$fork" =~ $repository_pattern || ! "$REGISTRY" =~ $repository_pattern ]]; then
+            echo "::error::fork and registry must be owner/name"
+            exit 1
+          fi
+
+          git clone --quiet "https://github.com/$REGISTRY.git" registry
+          cd registry
+
+          if ! grep --quiet --line-regexp --fixed-strings "[$TEMPLATE_ID]" templates.toml; then
+            echo "::error::$TEMPLATE_ID has no entry in templates.toml; the first submission is a pull request written by hand"
+            exit 1
+          fi
+
+          awk -v id="$TEMPLATE_ID" -v rev="$GITHUB_SHA" -v version="$version" '
+            /^\[/ { inside = ($0 == "[" id "]") }
+            inside && /^rev[ \t]*=/ { print "rev = \"" rev "\""; next }
+            inside && /^version[ \t]*=/ { print "version = \"" version "\""; next }
+            { print }
+          ' templates.toml > templates.next.toml
+          mv templates.next.toml templates.toml
+
+          if git diff --quiet; then
+            echo "templates.toml already names $version at $GITHUB_SHA"
+            exit 0
+          fi
+
+          git -c user.name="github-actions[bot]" \
+            -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit --quiet --all --message "feat: update $TEMPLATE_ID to $version"
+          git push --quiet --force "https://x-access-token:${GH_TOKEN}@github.com/$fork.git" "HEAD:refs/heads/$branch"
+
+          gh pr create \
+            --repo "$REGISTRY" \
+            --base main \
+            --head "${fork%%/*}:$branch" \
+            --title "Update $TEMPLATE_ID to $version" \
+            --body "Moves \`$TEMPLATE_ID\` to $version at \`$GITHUB_SHA\` of $GITHUB_SERVER_URL/$GITHUB_REPOSITORY. Opened by the reusable bump workflow on the tag \`$GITHUB_REF_NAME\`."

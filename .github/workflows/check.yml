@@ -1,0 +1,114 @@
+name: check
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  IWE_VERSION: "0.32.0"
+  CARGO_TERM_COLOR: always
+
+jobs:
+  crate:
+    name: Validator crate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Detect crate changes
+        id: changes
+        run: |
+          if git diff --quiet HEAD^1 HEAD -- crates Cargo.toml Cargo.lock rust-toolchain.toml; then
+            echo "crate=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "crate=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install the pinned toolchain
+        if: steps.changes.outputs.crate == 'true'
+        run: rustup toolchain install
+
+      - name: Cache the cargo build
+        if: steps.changes.outputs.crate == 'true'
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: cargo-test-${{ runner.os }}-${{ hashFiles('Cargo.lock', 'rust-toolchain.toml') }}
+
+      - name: Format
+        if: steps.changes.outputs.crate == 'true'
+        run: cargo fmt --check
+
+      - name: Clippy
+        if: steps.changes.outputs.crate == 'true'
+        run: cargo clippy --locked --all-targets -- -D warnings
+
+      - name: Clippy without the cli feature
+        if: steps.changes.outputs.crate == 'true'
+        run: cargo clippy --locked --no-default-features --all-targets -- -D warnings
+
+      - name: Test
+        if: steps.changes.outputs.crate == 'true'
+        run: cargo test --locked
+
+  templates:
+    name: Changed templates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Install the pinned toolchain
+        run: rustup toolchain install
+
+      - name: Cache the cargo build
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: cargo-release-${{ runner.os }}-${{ hashFiles('Cargo.lock', 'rust-toolchain.toml') }}
+
+      - name: Build iwe-template
+        run: cargo build --release --locked
+
+      - name: List the changed entries
+        id: entries
+        run: |
+          if ! git show HEAD^1:templates.toml > "$RUNNER_TEMP/base.toml" 2> /dev/null; then
+            : > "$RUNNER_TEMP/base.toml"
+          fi
+          target/release/iwe-template entries templates.toml --since "$RUNNER_TEMP/base.toml" > "$RUNNER_TEMP/changed.json"
+          cat "$RUNNER_TEMP/changed.json"
+          echo "count=$(jq length "$RUNNER_TEMP/changed.json")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache the iwe binary
+        if: steps.entries.outputs.count != '0'
+        id: cache-iwe
+        uses: actions/cache@v6
+        with:
+          path: ~/.cargo/bin/iwe
+          key: iwe-${{ runner.os }}-${{ env.IWE_VERSION }}
+
+      - name: Install iwe
+        if: steps.entries.outputs.count != '0' && steps.cache-iwe.outputs.cache-hit != 'true'
+        run: cargo install iwe --locked --version "$IWE_VERSION"
+
+      - name: Validate and report each changed template
+        if: steps.entries.outputs.count != '0'
+        run: scripts/review-entries.sh "$RUNNER_TEMP/changed.json"
