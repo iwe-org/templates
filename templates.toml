@@ -20,3 +20,13 @@
 #
 # To submit a template, add a table. To update one, change `rev` and `version`.
 # See CONTRIBUTING.md.
+
+[dev-workspace]
+repository = "https://github.com/iwe-org/dev-workspace"
+rev = "5866d0829ea076b1e58930c1ee8bc5d42c349485"
+version = "1.0.0"
+
+[marketing-workspace]
+repository = "https://github.com/iwe-org/marketing-workspace"
+rev = "9f15073d35a2a044cd39bbdf3e514b268cc6a543"
+version = "1.0.0"
