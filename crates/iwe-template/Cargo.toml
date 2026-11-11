@@ -1,0 +1,35 @@
+[package]
+name = "iwe-template"
+version = "0.1.0"
+edition = "2021"
+description = "Validator, packer and index types for iWe workspace templates"
+license = "MIT"
+repository = "https://github.com/iwe-org/templates"
+publish = false
+
+[lib]
+name = "iwe_template"
+path = "src/lib.rs"
+
+[[bin]]
+name = "iwe-template"
+path = "src/main.rs"
+required-features = ["cli"]
+
+[features]
+default = ["cli"]
+cli = ["dep:clap"]
+
+[dependencies]
+clap = { version = "4", features = ["derive"], optional = true }
+flate2 = "1"
+globset = "0.4"
+semver = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+tar = { version = "0.4", default-features = false }
+toml = "0.8"
+
+[dev-dependencies]
+tempfile = "3"

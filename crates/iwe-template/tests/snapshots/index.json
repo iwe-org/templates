@@ -1,0 +1,57 @@
+{
+  "format": 1,
+  "generated": "2026-11-10T09:00:00Z",
+  "templates": [
+    {
+      "id": "field-notes",
+      "format": 1,
+      "name": "Field Notes",
+      "description": "A small notebook with a board and one skill.",
+      "version": "1.2.0",
+      "authors": [
+        "Ada Example"
+      ],
+      "license": "MIT",
+      "repository": "https://github.com/example/field-notes",
+      "rev": "0123456789abcdef0123456789abcdef01234567",
+      "archive": "https://github.com/iwe-org/templates/releases/download/field-notes-1.2.0/field-notes-1.2.0.tar.gz",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "preview": "https://github.com/iwe-org/templates/releases/download/field-notes-1.2.0/preview.png",
+      "files": 13,
+      "agent": {
+        "instructions": true,
+        "skills": [
+          "plan",
+          "review"
+        ]
+      },
+      "stars": 11,
+      "featured": true,
+      "published": "2026-11-11"
+    },
+    {
+      "id": "plain-notes",
+      "format": 1,
+      "name": "Plain Notes",
+      "description": "Notes and nothing else.",
+      "version": "0.3.1",
+      "authors": [
+        "Bo Example",
+        "Cy Example"
+      ],
+      "license": "CC0-1.0",
+      "repository": "https://github.com/example/mono",
+      "rev": "89abcdef0123456789abcdef0123456789abcdef",
+      "archive": "https://github.com/iwe-org/templates/releases/download/plain-notes-0.3.1/plain-notes-0.3.1.tar.gz",
+      "sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "files": 4,
+      "agent": {
+        "instructions": false,
+        "skills": []
+      },
+      "stars": 0,
+      "featured": false,
+      "published": "2026-11-09"
+    }
+  ]
+}
