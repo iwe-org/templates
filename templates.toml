@@ -33,5 +33,5 @@ version = "1.1.0"
 
 [seventeen-centuries]
 repository = "https://github.com/iwe-org/seventeen-centuries-workspace"
-rev = "f215cac2e6640f871b2283761f34ae408173524f"
-version = "1.0.0"
+rev = "1356d3e06981c12e5fa6201139256cd2a76a76da"
+version = "1.0.1"
