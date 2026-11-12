@@ -41,3 +41,9 @@ repository = "https://github.com/kiil/journalism-workspace"
 rev = "3d2d989e65594d4de4fc250379f8922cfe5b9891"
 version = "1.0.0"
 path = ""
+
+[jobhunt]
+repository = "https://github.com/kiil/jobhunt-workspace"
+rev = "7afbf623d82ae9e1a7706787b5d2f570f02b1200"
+version = "1.0.0"
+path = ""
