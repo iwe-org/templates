@@ -35,3 +35,9 @@ version = "1.2.0"
 repository = "https://github.com/iwe-org/seventeen-centuries-workspace"
 rev = "1356d3e06981c12e5fa6201139256cd2a76a76da"
 version = "1.0.1"
+
+[journalism]
+repository = "https://github.com/kiil/journalism-workspace"
+rev = "3d2d989e65594d4de4fc250379f8922cfe5b9891"
+version = "1.0.0"
+path = ""
