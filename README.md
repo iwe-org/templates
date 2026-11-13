@@ -27,6 +27,8 @@ user until a pull request here moves the pinned revision.
 | `.github/workflows/check.yml` | On a pull request: validates each changed entry and writes the reviewer's report to the check summary |
 | `.github/workflows/publish.yml` | On merge: packages each new version as a release, then rebuilds the index |
 | `.github/workflows/stars.yml` | Daily: refreshes the star counts in the index |
+| `.github/workflows/validate.yml` | A reusable workflow a template repository runs on its own pushes and pull requests: the structural rules, `iwe schema validate` and `iwe normalize` |
+| `IWE_VERSION` | The `iwe` CLI version every workflow validates with |
 | `.github/workflows/bump.yml` | A reusable workflow a template repository runs on a tag to open its update pull request |
 | `scripts/` | The shell the workflows share |
 

@@ -3,7 +3,8 @@ use std::path::Path;
 
 use crate::config::config_violations;
 use crate::entry::{
-    is_outside_template, read_sources, EntryKind, ReadError, Source, TemplateEntry,
+    is_outside_template, read_sources_except, EntryKind, IgnoredPaths, ReadError, Source,
+    TemplateEntry,
 };
 use crate::limits::{
     ACCEPTED_LICENSES, CONFIG_PATH, FORMAT, MANIFEST_PATH, MAX_DESCRIPTION_CHARS, MAX_FILES,
@@ -23,7 +24,18 @@ pub struct Expected {
 }
 
 pub fn validate_dir(dir: &Path, expected: Option<&Expected>) -> Result<Vec<Violation>, ReadError> {
-    Ok(validate_sources(&read_sources(dir)?, expected))
+    validate_dir_except(dir, expected, &IgnoredPaths::default())
+}
+
+pub fn validate_dir_except(
+    dir: &Path,
+    expected: Option<&Expected>,
+    ignored: &IgnoredPaths,
+) -> Result<Vec<Violation>, ReadError> {
+    Ok(validate_sources(
+        &read_sources_except(dir, ignored)?,
+        expected,
+    ))
 }
 
 pub fn validate_entries(entries: &[TemplateEntry], expected: Option<&Expected>) -> Vec<Violation> {

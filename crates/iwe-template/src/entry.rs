@@ -74,6 +74,45 @@ impl Source {
     }
 }
 
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct IgnoredPaths {
+    files: Vec<String>,
+    folders: Vec<String>,
+}
+
+impl IgnoredPaths {
+    pub fn from_git_listing(listing: &str) -> Self {
+        let mut ignored = IgnoredPaths::default();
+        for line in listing.split('\0') {
+            match line.strip_suffix('/') {
+                Some(folder) if !folder.is_empty() && folder != "." => {
+                    ignored.folders.push(folder.to_string())
+                }
+                Some(_) => {}
+                None if !line.is_empty() => ignored.files.push(line.to_string()),
+                None => {}
+            }
+        }
+        ignored
+    }
+
+    pub fn len(&self) -> usize {
+        self.files.len() + self.folders.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    pub(crate) fn covers(&self, path: &str) -> bool {
+        self.files.iter().any(|file| file == path)
+            || self.folders.iter().any(|folder| {
+                path.strip_prefix(folder.as_str())
+                    .is_some_and(|rest| rest.is_empty() || rest.starts_with('/'))
+            })
+    }
+}
+
 pub fn read_dir(dir: &Path) -> Result<Vec<TemplateEntry>, ReadError> {
     Ok(read_sources(dir)?
         .into_iter()
@@ -86,10 +125,18 @@ pub fn read_dir(dir: &Path) -> Result<Vec<TemplateEntry>, ReadError> {
 }
 
 pub(crate) fn read_sources(dir: &Path) -> Result<Vec<Source>, ReadError> {
+    read_sources_except(dir, &IgnoredPaths::default())
+}
+
+pub(crate) fn read_sources_except(
+    dir: &Path,
+    ignored: &IgnoredPaths,
+) -> Result<Vec<Source>, ReadError> {
     if !dir.is_dir() {
         return Err(ReadError::NotADirectory(dir.to_path_buf()));
     }
     let mut walk = Walk {
+        ignored,
         sources: Vec::new(),
         loaded_bytes: 0,
     };
@@ -98,12 +145,13 @@ pub(crate) fn read_sources(dir: &Path) -> Result<Vec<Source>, ReadError> {
     Ok(walk.sources)
 }
 
-struct Walk {
+struct Walk<'a> {
+    ignored: &'a IgnoredPaths,
     sources: Vec<Source>,
     loaded_bytes: u64,
 }
 
-impl Walk {
+impl Walk<'_> {
     fn visit(&mut self, dir: &Path, prefix: &str) -> Result<(), ReadError> {
         let io_error = |path: &Path, source: io::Error| ReadError::Io {
             path: path.to_path_buf(),
@@ -118,7 +166,7 @@ impl Walk {
                 .into_string()
                 .map_err(|_| ReadError::NonUtf8Path(full.clone()))?;
             let path = format!("{prefix}{name}");
-            if is_outside_template(&path) {
+            if is_outside_template(&path) || self.ignored.covers(&path) {
                 continue;
             }
             let metadata = fs::symlink_metadata(&full).map_err(|source| io_error(&full, source))?;

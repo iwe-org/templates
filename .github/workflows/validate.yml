@@ -1,0 +1,85 @@
+name: validate
+
+on:
+  workflow_call:
+    inputs:
+      path:
+        description: The template's folder inside the repository; empty for the root
+        required: false
+        type: string
+        default: ""
+      registry:
+        description: The owner/name of the registry repository
+        required: false
+        type: string
+        default: iwe-org/templates
+
+permissions:
+  contents: read
+
+jobs:
+  template:
+    name: Structural rules, schemas and normalization
+    runs-on: ubuntu-latest
+    env:
+      TEMPLATE_PATH: ${{ inputs.path }}
+      REGISTRY: ${{ inputs.registry }}
+      CARGO_TERM_COLOR: always
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Fetch the registry
+        id: registry
+        run: |
+          set -euo pipefail
+          if [[ ! "$REGISTRY" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
+            echo "::error::registry must be owner/name"
+            exit 1
+          fi
+          git clone --quiet --depth 1 "https://github.com/$REGISTRY.git" "$RUNNER_TEMP/registry"
+          echo "rev=$(git -C "$RUNNER_TEMP/registry" rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "iwe=$(tr -d '[:space:]' < "$RUNNER_TEMP/registry/IWE_VERSION")" >> "$GITHUB_OUTPUT"
+          mkdir -p "$RUNNER_TEMP/tools/bin"
+          echo "$RUNNER_TEMP/tools/bin" >> "$GITHUB_PATH"
+
+      - name: Cache iwe-template
+        id: cache-iwe-template
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/tools/bin/iwe-template
+          key: iwe-template-${{ runner.os }}-${{ steps.registry.outputs.rev }}
+
+      - name: Build iwe-template
+        if: steps.cache-iwe-template.outputs.cache-hit != 'true'
+        run: |
+          cd "$RUNNER_TEMP/registry"
+          rustup toolchain install
+          cargo install --quiet --locked --path crates/iwe-template --root "$RUNNER_TEMP/tools"
+
+      - name: Cache the iwe binary
+        id: cache-iwe
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/tools/bin/iwe
+          key: iwe-${{ runner.os }}-${{ steps.registry.outputs.iwe }}
+
+      - name: Install iwe
+        if: steps.cache-iwe.outputs.cache-hit != 'true'
+        env:
+          IWE_VERSION: ${{ steps.registry.outputs.iwe }}
+        run: cargo install iwe --quiet --locked --version "$IWE_VERSION" --root "$RUNNER_TEMP/tools"
+
+      - name: Check the structural rules
+        run: iwe-template check "./$TEMPLATE_PATH"
+
+      - name: Validate every document against its schemas
+        working-directory: ./${{ inputs.path }}
+        run: iwe schema validate
+
+      - name: Check that normalization is a no-op
+        working-directory: ./${{ inputs.path }}
+        run: |
+          iwe normalize
+          git diff --exit-code
