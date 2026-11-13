@@ -50,6 +50,6 @@ path = ""
 
 [social]
 repository = "https://github.com/kiil/social-workspace"
-rev = "29a88b3ea8212c15d15e68080edeb7e8f1b011e7"
+rev = "25e910db6613071ab65b6b38880d0f16599506d4"
 version = "1.0.0"
 path = ""
