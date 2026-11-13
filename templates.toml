@@ -47,3 +47,9 @@ repository = "https://github.com/kiil/jobhunt-workspace"
 rev = "7afbf623d82ae9e1a7706787b5d2f570f02b1200"
 version = "1.0.0"
 path = ""
+
+[social]
+repository = "https://github.com/kiil/social-workspace"
+rev = "25e910db6613071ab65b6b38880d0f16599506d4"
+version = "1.0.0"
+path = ""
