@@ -65,6 +65,42 @@ fn check_passes_a_valid_template_and_fails_an_invalid_one() {
 }
 
 #[test]
+fn check_skips_what_git_ignores_in_a_checkout() {
+    let root = tempfile::tempdir().unwrap();
+    write_tree(root.path(), &valid_template());
+    fs::write(root.path().join(".gitignore"), ".iwe/app/\niwe.log\n").unwrap();
+    fs::create_dir_all(root.path().join(".iwe/app/snapshots")).unwrap();
+    fs::write(root.path().join(".iwe/app/objects.db"), "records").unwrap();
+    fs::write(root.path().join(".iwe/app/snapshots/one.tmsnapshot"), "x").unwrap();
+    fs::write(root.path().join("iwe.log"), "log").unwrap();
+
+    let outside_git = run(&["check", path_text(root.path())]);
+    assert_eq!(outside_git.status.code(), Some(1));
+    assert!(text(&outside_git.stdout).contains(".iwe/app/objects.db: "));
+
+    let initialized = Command::new("git")
+        .arg("-C")
+        .arg(root.path())
+        .args(["init", "--quiet"])
+        .status()
+        .unwrap();
+    assert!(initialized.success());
+    let in_a_checkout = run(&["check", path_text(root.path())]);
+    assert_eq!(
+        in_a_checkout.status.code(),
+        Some(0),
+        "{}",
+        text(&in_a_checkout.stdout)
+    );
+    assert!(text(&in_a_checkout.stderr).contains("skipping 2 path(s) git ignores"));
+
+    fs::write(root.path().join(".mcp.json"), "{}").unwrap();
+    let untracked = run(&["check", path_text(root.path())]);
+    assert_eq!(untracked.status.code(), Some(1));
+    assert!(text(&untracked.stdout).starts_with(".mcp.json: "));
+}
+
+#[test]
 fn check_on_a_missing_folder_exits_with_two() {
     assert_eq!(
         run(&["check", "/nonexistent/template"]).status.code(),

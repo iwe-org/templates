@@ -7,8 +7,8 @@ use std::time::SystemTime;
 use clap::{Parser, Subcommand};
 use iwe_template::{
     archive_file_name, assemble_index, compare_url, pack, report_dir, utc_date, utc_timestamp,
-    validate_dir, EntryRecord, Expected, Origin, Registry, ReportOptions, DEFAULT_RELEASE_BASE_URL,
-    ENTRY_RECORD_FILE, PREVIEW_FILE,
+    validate_dir_except, EntryRecord, Expected, IgnoredPaths, Origin, Registry, ReportOptions,
+    DEFAULT_RELEASE_BASE_URL, ENTRY_RECORD_FILE, PREVIEW_FILE,
 };
 
 #[derive(Parser)]
@@ -122,7 +122,12 @@ fn run(command: Command) -> Result<ExitCode, String> {
                 version,
                 previous_version,
             });
-            let violations = validate_dir(&dir, expected.as_ref()).map_err(display)?;
+            let ignored = git_ignored_paths(&dir);
+            if !ignored.is_empty() {
+                eprintln!("skipping {} path(s) git ignores", ignored.len());
+            }
+            let violations =
+                validate_dir_except(&dir, expected.as_ref(), &ignored).map_err(display)?;
             for violation in &violations {
                 println!("{violation}");
             }
@@ -222,6 +227,27 @@ fn run(command: Command) -> Result<ExitCode, String> {
             println!("{}", to_json(&changes)?);
             Ok(ExitCode::SUCCESS)
         }
+    }
+}
+
+fn git_ignored_paths(dir: &Path) -> IgnoredPaths {
+    let listing = std::process::Command::new("git")
+        .arg("-C")
+        .arg(dir)
+        .args([
+            "ls-files",
+            "--others",
+            "--ignored",
+            "--exclude-standard",
+            "--directory",
+            "-z",
+        ])
+        .output();
+    match listing {
+        Ok(output) if output.status.success() => {
+            IgnoredPaths::from_git_listing(&String::from_utf8_lossy(&output.stdout))
+        }
+        _ => IgnoredPaths::default(),
     }
 }
 

@@ -14,7 +14,7 @@ mod unpack;
 mod validate;
 mod violation;
 
-pub use entry::{read_dir, EntryKind, ReadError, TemplateEntry};
+pub use entry::{read_dir, EntryKind, IgnoredPaths, ReadError, TemplateEntry};
 pub use index::{
     archive_file_name, assemble_index, release_name, AgentInfo, EntryRecord, Index, IndexEntry,
     IndexError, ARCHIVE_EXTENSION, DEFAULT_RELEASE_BASE_URL, ENTRY_RECORD_FILE, INDEX_URL,
@@ -33,5 +33,5 @@ pub use report::{compare_url, report, report_dir, ReportOptions};
 pub use scripts::{scripts_in, Script};
 pub use timestamp::{utc_date, utc_timestamp};
 pub use unpack::{unpack, UnpackError};
-pub use validate::{is_valid_id, validate_dir, validate_entries, Expected};
+pub use validate::{is_valid_id, validate_dir, validate_dir_except, validate_entries, Expected};
 pub use violation::Violation;

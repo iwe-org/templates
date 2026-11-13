@@ -79,8 +79,9 @@ writes a file, so a template that breaks one is neither published nor installed.
 - **Manifest.** The field rules above, and an `id` and `version` equal to the
   registry entry's.
 
-CI also runs two quality checks with a pinned `iwe` CLI (the version is
-`IWE_VERSION` in `.github/workflows/check.yml`), from the template's folder:
+CI also runs two quality checks with a pinned `iwe` CLI (the version is the one
+line of the `IWE_VERSION` file at the root of this repository), from the
+template's folder:
 
 ```
 iwe schema validate
@@ -98,6 +99,33 @@ iwe-template report path/to/your/template
 `check` prints one line per broken rule and exits 1 when there is any. `report`
 prints what a reviewer will be shown. Opening the repository as a workspace in
 iWe is the other half of the test.
+
+In a git checkout `check` leaves out what git ignores, and says how many paths
+it skipped. Opening the template in iWe writes the app's records to `.iwe/app/`,
+so keep `.iwe/app/` in the template's `.gitignore` and the check judges what a
+clone of the repository holds. A file that is committed is always checked,
+ignored or not.
+
+## Validate in your repository
+
+A template repository can run every check the registry runs, on each push and
+pull request, with the reusable workflow:
+
+``` yaml
+name: validate
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  validate:
+    uses: iwe-org/templates/.github/workflows/validate.yml@main
+```
+
+It runs `iwe-template check`, `iwe schema validate` and `iwe normalize` with the
+`iwe` version the registry pins, so a template that passes there passes the
+registry's `check`. Pass `path` when the template is not at the repository
+root.
 
 ## Submit
 
