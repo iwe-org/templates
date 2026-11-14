@@ -23,18 +23,18 @@
 
 [dev-workspace]
 repository = "https://github.com/iwe-org/dev-workspace"
-rev = "dcff562f17ca8ff49d84a516e88cde806d2ac269"
-version = "1.3.0"
+rev = "32f57bc14b7abad39a4c33bbebcbb92614083c32"
+version = "1.4.0"
 
 [marketing-workspace]
 repository = "https://github.com/iwe-org/marketing-workspace"
-rev = "8e50b6d972a67c1dc0b2091ff28d38cd0c23c9ca"
-version = "1.3.0"
+rev = "d19edd777075831b51a42f963f335dba77b5360c"
+version = "1.4.0"
 
 [seventeen-centuries]
 repository = "https://github.com/iwe-org/seventeen-centuries-workspace"
-rev = "635bba95845141a2a34e6dbce8fb335c64efef28"
-version = "1.1.0"
+rev = "3a7de6cbd58b18a8d4c31c97599051bf44ab4624"
+version = "2.0.0"
 
 [journalism]
 repository = "https://github.com/kiil/journalism-workspace"
