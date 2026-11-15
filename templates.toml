@@ -56,6 +56,6 @@ path = ""
 
 [journal]
 repository = "https://github.com/iwe-org/journal-template"
-rev = "87dd28409d4fb676cc8494e5af4cdcfa3bdca542"
+rev = "c5e25034b61511c11de3fdd2bc1fc68a3c2ac3dd"
 version = "1.0.0"
 path = ""
