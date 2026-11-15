@@ -53,3 +53,9 @@ repository = "https://github.com/kiil/social-workspace"
 rev = "25e910db6613071ab65b6b38880d0f16599506d4"
 version = "1.0.0"
 path = ""
+
+[journal]
+repository = "https://github.com/iwe-org/journal-template"
+rev = "c5e25034b61511c11de3fdd2bc1fc68a3c2ac3dd"
+version = "1.0.0"
+path = ""
